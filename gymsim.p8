@@ -31,8 +31,25 @@ boss_states = {
 state = game_states.splash
 boss_state = boss_states.boss_turn
 
+-- boss level things
 -- what to print on the next boss move
 boss_move = "the boss does something"
+-- which workouts have been completed
+completed_tasks = {true, true, true, true} 
+-- which boss options have been chosen
+chosen_boss_options = {false, false, false, false}
+-- text to show for each boss option
+boss_fight_options = {"power", "speed", "agility", "escape"}
+-- boss responses
+boss_response = {}
+boss_response["power"] = "the vacuum cannot handle your power"
+boss_response["speed"] = "the vacuum cannot handle your speed"
+boss_response["agility"] = "the vacuum cannot handle your agility"
+boss_response["escape"] = "you manage to escape"
+-- symbol to indicate option is selected
+selected_symbol = "\130"
+-- current selected option
+selected_option = 1
 
 floor = 120
 drag = 0.3 -- 0.1 pixel per second
@@ -55,7 +72,6 @@ solid = false
 function debug()
   --print(solid, player.x+3, player.y-11, 9)
   write("game state is " .. tostr(state), 0,0,4)
-
   -- for button=0,#isbuttonpressed - 1 do
   --   write("btn " .. tostr(button) .. " " .. tostr(wasbuttonreleased[button + 1]), 0,20 + button * 10, 4)
   -- end
@@ -248,7 +264,6 @@ function _draw()
   elseif state == game_states.boss then
     draw_boss()
   end
-  debug()
 end
 
 
@@ -321,8 +336,6 @@ end
 
 -- boss
 function update_boss()
-
-
   if boss_state == boss_states.victory then
     boss_move = "you defeated the vacuum"
     -- go to end screen if victory
@@ -341,11 +354,19 @@ function update_boss()
       -- advance to your turn
       boss_state = boss_states.your_turn
 
-      local is_boss_defeated = true
+      -- reset current selected option
       for i=1,#chosen_boss_options do
+        if not chosen_boss_options[i] and completed_tasks[i] then
+          selected_option = i
+          break
+        end
+      end 
+
+
+      local is_boss_defeated = true
+      for i=1,#chosen_boss_options - 1 do -- do not count escape as a necessary option
         is_boss_defeated = is_boss_defeated and chosen_boss_options[i]
       end
-
       if is_boss_defeated then
         boss_state = boss_states.victory
       end
@@ -354,11 +375,14 @@ function update_boss()
   end
 
   -- check if option has changed
+
+  local original_option = selected_option
   if btnp(2) then
-    selected_option = selected_option - 1
+    selected_option = get_prev_option_index(selected_option)    
+    
     sfx(20)
   elseif btnp(3) then
-    selected_option = selected_option + 1
+    selected_option = get_next_option_index(selected_option)
     sfx(20)
   end
 
@@ -391,51 +415,59 @@ function draw_boss()
   -- draw boss
   spr(5, 100, 20)
 
+  -- draw action box
+  rect(0, 120, 118, 70, 4)
+  rect(4, 116, 114, 74, 4)
   if boss_state == boss_states.your_turn then
     draw_boss_menu()
   end 
 
   if boss_state == boss_states.boss_turn or boss_state == boss_states.victory then
-    write(boss_move, 0,20, 3)
+    write_with_bounds(boss_move, 10,80, 3)
   end
 end
-
--- which workouts have been completed
-completed_tasks = {true, true, true, true} 
--- which boss options have been chosen
-chosen_boss_options = {false, false, false}
--- text to show for each boss option
-boss_fight_options = {"power", "speed", "agility", "escape"}
--- boss responses
-boss_response = {}
-boss_response["power"] = "the vacuum cannot handle your power"
-boss_response["speed"] = "the vacuum cannot handle your speed"
-boss_response["agility"] = "the vacuum cannot handle your agility"
-boss_response["escape"] = "you manage to escape"
--- symbol to indicate option is selected
-selected_symbol = "\130"
--- current selected option
-selected_option = 1
 
 function draw_boss_menu()
   local text_spacing = 10
   local menu_offset = {}
-  menu_offset["x"] = 0
-  menu_offset["y"] = 70
+  menu_offset["x"] = 10
+  menu_offset["y"] = 65
 
   for i = 1,#completed_tasks do
     if completed_tasks[i] and not chosen_boss_options[i] then
       -- task has been completed and option not chosen yet so draw it
       if selected_option == i then
-        write(selected_symbol .. boss_fight_options[i], menu_offset.x,menu_offset.y + text_spacing * i,5)
+        write_with_bounds(selected_symbol .. boss_fight_options[i], menu_offset.x,menu_offset.y + text_spacing * i,5)
       else
-        write(" " .. boss_fight_options[i], menu_offset.x,menu_offset.y + text_spacing * i,5)
+        write_with_bounds(" " .. boss_fight_options[i], menu_offset.x,menu_offset.y + text_spacing * i,5)
       end
     end
   end
 end
 
--- utilsgit push --set-upstream origin davey
+-- utils
+
+
+-- finds the next valid option from boss fight menu
+function get_next_option_index(cur)
+  for i=cur + 1,#boss_fight_options do
+    if not chosen_boss_options[i] and completed_tasks[i] then
+      return i
+    end
+  end
+  return cur -- no more options
+end
+
+-- finds the previous valid option from boss fight menu
+function get_prev_option_index(cur)
+  for i=cur - 1,1,-1 do
+    if not chosen_boss_options[i] and completed_tasks[i] then
+      return i
+    end
+  end
+  return cur -- no more options
+end
+
 
 
 function issolid(x, y)
@@ -478,11 +510,52 @@ function write(text,x,y,color)
     print(text,x+1,y+1,color)
 end
 
+-- prints black bordered text and wraps around to next line
+function write_with_bounds(text,base_x,base_y,color, x_bound)
+  if (x_bound == nil) then
+    x_bound = screen_size
+  end
+  local tokens = mysplit(text)
+  local xpos = base_x
+  for i=1,#tokens do
+    local word_length = (#(tokens[i]) + 1) * 4  
+    if word_length + xpos >= x_bound then
+      -- go to next line, reset x position
+      base_y = base_y + 8
+      xpos = base_x
+    end
+    write(tokens[i] .. " ",xpos,base_y,color)
+    xpos += word_length
+  end
+end
+
+-- splits string into list 
+function mysplit(inputstr, sep)
+  if sep == nil then
+    sep = " "
+  end
+  local t={}
+  local word = ""
+  word = sub(inputstr, 0, 0)
+  for i=1, #inputstr + 1 do
+     local char = sub(inputstr,i, i)
+     if char == sep then
+       t[#t + 1] = word
+       word = ""
+     else
+       word = word .. char
+     end
+  end
+  t[#t + 1] = word
+  return t
+end
+
 
 -- returns if module of a/b == 0. equals to a % b == 0 in other languages
 function mod_zero(a,b)
    return a - flr(a/b)*b == 0
 end
+
 __gfx__
 00000000000330009999999900000000888888880200002000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000ff0009000000900055000800000080222222000000000000000000000000000000000000000000000000000000000000000000000000000000000
