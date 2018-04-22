@@ -1,21 +1,23 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
--- base game
--- a base to start a game
--- by misato
+--------------------------------------------------------------------------------
+-- acknowledgements
+    -- misato for the base game outline
+    -- pico monsters: https://www.lexaloffle.com/bbs/?pid=26810#p27211
+    --
 
+--------------------------------------------------------------------------------
 
--- state machine
-
--- game states
--- there are no enum in lua so followed the advice from here: https://www.allegro.cc/forums/thread/605178
+--------------------------------------------------------------------------------
+-- begin states
+--------------------------------------------------------------------------------
 game_states = {
   splash = 0,
   gym = 1,
   feather = 2,
   runner = 3,
-  atsume = 4,
+  masher = 4,
   gameover = 5,
   boss = 6
 }
@@ -27,7 +29,14 @@ boss_states = {
     victory = 4,
     defeat = 5,
 }
+--------------------------------------------------------------------------------
+-- end states
+--------------------------------------------------------------------------------
 
+
+--------------------------------------------------------------------------------
+-- begin global variables
+--------------------------------------------------------------------------------
 state = game_states.splash
 boss_state = boss_states.boss_turn
 
@@ -35,7 +44,7 @@ boss_state = boss_states.boss_turn
 -- what to print on the next boss move
 boss_move = "the boss does something"
 -- which workouts have been completed
-completed_tasks = {true, true, true, true} 
+completed_tasks = {true, true, true, true}
 -- which boss options have been chosen
 chosen_boss_options = {false, false, false, false}
 -- text to show for each boss option
@@ -51,24 +60,32 @@ selected_symbol = "\130"
 -- current selected option
 selected_option = 1
 
-floor = 120
-drag = 0.3 -- 0.1 pixel per second
 
 player = {
   x = 8,
   y = 8,
   dx = 0,
   dy = 0,
-  hearts = 0,
   speed = 0.5, -- how far the player should travel over 60 seconds
-  jump = {x=0, y=-12},
-  jumping = false,
-  jumpdur = 1,
-  jumpt = 0, -- jump timer
-  canjump = false
+  hearts = 3,
+  cw = true,
+  runningBoost = false,
+  featherBoost = false,
+  punchingBoost = false
 }
+feathers = {}
+weights = {}
 g = {x=0,y=0.5}
+cam = {x = 0,y = 0}
 solid = false
+screen_size = 128
+score = 0
+show_feather = true
+timer = 0
+--------------------------------------------------------------------------------
+-- end global variables
+--------------------------------------------------------------------------------
+
 function debug()
   --print(solid, player.x+3, player.y-11, 9)
   write("game state is " .. tostr(state), 0,0,4)
@@ -339,7 +356,7 @@ function update_boss()
   if boss_state == boss_states.victory then
     boss_move = "you defeated the vacuum"
     -- go to end screen if victory
-    if btnp(5) then 
+    if btnp(5) then
       change_state(1)
     end
   end
@@ -360,7 +377,7 @@ function update_boss()
           selected_option = i
           break
         end
-      end 
+      end
 
 
       local is_boss_defeated = true
@@ -378,8 +395,8 @@ function update_boss()
 
   local original_option = selected_option
   if btnp(2) then
-    selected_option = get_prev_option_index(selected_option)    
-    
+    selected_option = get_prev_option_index(selected_option)
+
     sfx(20)
   elseif btnp(3) then
     selected_option = get_next_option_index(selected_option)
@@ -392,7 +409,7 @@ function update_boss()
     selected_option = #boss_fight_options
   end
 
-  if btnp(5) then 
+  if btnp(5) then
     -- an option has been selected
     if completed_tasks[selected_option] then
       -- did the workout for this option
@@ -420,7 +437,7 @@ function draw_boss()
   rect(4, 116, 114, 74, 4)
   if boss_state == boss_states.your_turn then
     draw_boss_menu()
-  end 
+  end
 
   if boss_state == boss_states.boss_turn or boss_state == boss_states.victory then
     write_with_bounds(boss_move, 10,80, 3)
@@ -518,7 +535,7 @@ function write_with_bounds(text,base_x,base_y,color, x_bound)
   local tokens = mysplit(text)
   local xpos = base_x
   for i=1,#tokens do
-    local word_length = (#(tokens[i]) + 1) * 4  
+    local word_length = (#(tokens[i]) + 1) * 4
     if word_length + xpos >= x_bound then
       -- go to next line, reset x position
       base_y = base_y + 8
@@ -529,7 +546,7 @@ function write_with_bounds(text,base_x,base_y,color, x_bound)
   end
 end
 
--- splits string into list 
+-- splits string into list
 function mysplit(inputstr, sep)
   if sep == nil then
     sep = " "
@@ -638,4 +655,3 @@ __music__
 00 08090a44
 00 08090a0c
 02 08090a0d
-
