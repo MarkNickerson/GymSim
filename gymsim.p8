@@ -19,7 +19,10 @@ game_states = {
   runner = 3,
   masher = 4,
   gameover = 5,
-  boss = 6
+  boss = 6,
+  run_intro = 7,
+  run_win = 8,
+  run_fail = 9
 }
 
 boss_states = {
@@ -67,7 +70,7 @@ player = {
   dx = 0,
   dy = 0,
   speed = 0.5, -- how far the player should travel over 60 seconds
-  hearts = 3,
+  hearts = 0,
   cw = true,
   runningboost = false,
   featherboost = false,
@@ -99,19 +102,25 @@ end
 
 function _update60()
   solid = solid_tile(player.x, player.y)
-    if state == game_states.splash then
-        update_splash()
-    elseif state == game_states.gym then
-        update_gym()
-    elseif state == game_states.feather then
-        update_feather()
-    elseif state == game_states.runner then
-        update_runner()
-    elseif state == game_states.gameover then
-        update_gameover()
-    elseif state == game_states.boss then
-        update_boss()
-    end
+  if state == game_states.splash then
+    update_splash()
+  elseif state == game_states.gym then
+    update_gym()
+  elseif state == game_states.feather then
+    update_feather()
+  elseif state == game_states.runner then
+    update_runner()
+  elseif state == game_states.gameover then
+    update_gameover()
+  elseif state == game_states.boss then
+    update_boss()
+  elseif state == game_states.run_intro then
+    update_run_intro()
+  elseif state == game_states.run_win then
+    update_run_win()
+  elseif state == game_states.run_fail then
+    update_run_fail()
+  end
 end
 
 function _draw()
@@ -128,6 +137,12 @@ function _draw()
     draw_gameover()
   elseif state == game_states.boss then
     draw_boss()
+  elseif state == game_states.run_intro then
+    draw_run_intro()
+  elseif state == game_states.run_win then
+    draw_run_win()
+  elseif state == game_states.run_fail then
+    draw_run_fail()
   end
 end
 --------------------------------------------------------------------------------
@@ -202,7 +217,7 @@ function gym_input()
   local h = mget((player.x + xoffset)/8, (player.y+7)/8)
 
   if fget(h, 7) then
-    change_state(3)
+    change_state(7)
   end
   if fget(h, 6) then
     change_state(2)
@@ -311,11 +326,12 @@ end
 
 function update_runner()
     runner_input()
+    if (player.hearts == 0) then
+      change_state(9) -- change state to fail splash scene
+    end
 end
 
-test = 128
 function draw_runner()
-  test -= 1
   cls()
   -- draw map
   map(38, 0, -((time()*16 % 8)), 0, 128, 32)
@@ -323,7 +339,120 @@ function draw_runner()
   -- draw player sprite
   spr(1, player.x, player.y)
   draw_hearts()
-  spr(21, test, 24)
+end
+
+function update_run_intro()
+  if btnp(5) then
+      change_state(3) -- change state to running scene
+  end
+end
+
+function draw_run_intro()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,12)
+  local text = " running sim!"
+  write(text, text_x_pos(text), 30,7)
+  local text = " avoid obsticles by using"
+  write(text, text_x_pos(text), 50,7)
+  local text = " the up and down keys!"
+  write(text, text_x_pos(text), 60,7)
+  local text = " complete your training to"
+  write(text, text_x_pos(text), 75,7)
+  local text = " become more speedy!"
+  write(text, text_x_pos(text), 85,7)
+  spr(20, 0, 120)
+  spr(20, 8, 120)
+  spr(20, 16, 120)
+  spr(20, 24, 120)
+  spr(20, 32, 120)
+  spr(20, 40, 120)
+  spr(20, 48, 120)
+  spr(20, 56, 120)
+  spr(20, 64, 120)
+  spr(20, 72, 120)
+  spr(20, 80, 120)
+  spr(20, 88, 120)
+  spr(20, 96, 120)
+  spr(20, 104, 120)
+  spr(20, 112, 120)
+  spr(20, 120, 120)
+end
+
+function update_run_win()
+  if btnp(5) then
+      change_state(1) -- change state to gym scene
+  end
+end
+
+function draw_run_win()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,14)
+  local text = " you won!"
+  write(text, text_x_pos(text), 30,7)
+  local text = " you'll be able to"
+  write(text, text_x_pos(text), 50,7)
+  local text = " use a speed attack"
+  write(text, text_x_pos(text), 60,7)
+  local text = " when fighting the vacuum!"
+  write(text, text_x_pos(text), 70,7)
+  local text = " good job!"
+  write(text, text_x_pos(text), 90,7)
+  spr(22, 0, 120)
+  spr(22, 8, 120)
+  spr(22, 16, 120)
+  spr(22, 24, 120)
+  spr(22, 32, 120)
+  spr(22, 40, 120)
+  spr(22, 48, 120)
+  spr(22, 56, 120)
+  spr(22, 64, 120)
+  spr(22, 72, 120)
+  spr(22, 80, 120)
+  spr(22, 88, 120)
+  spr(22, 96, 120)
+  spr(22, 104, 120)
+  spr(22, 112, 120)
+  spr(22, 120, 120)
+end
+
+function update_run_fail()
+  if btnp(5) then
+      change_state(1) -- change state to gym scene
+  end
+end
+
+function draw_run_fail()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,9)
+  local text = " you failed!"
+  write(text, text_x_pos(text), 30,7)
+  local text = " you'll have to hit"
+  write(text, text_x_pos(text), 50,7)
+  local text = " the gym more if you"
+  write(text, text_x_pos(text), 60,7)
+  local text = " want to beat the vacuum!"
+  write(text, text_x_pos(text), 70,7)
+  local text = " try again!"
+  write(text, text_x_pos(text), 90,7)
+  spr(23, 0, 120)
+  spr(23, 8, 120)
+  spr(23, 16, 120)
+  spr(23, 24, 120)
+  spr(23, 32, 120)
+  spr(23, 40, 120)
+  spr(23, 48, 120)
+  spr(23, 56, 120)
+  spr(23, 64, 120)
+  spr(23, 72, 120)
+  spr(23, 80, 120)
+  spr(23, 88, 120)
+  spr(23, 96, 120)
+  spr(23, 104, 120)
+  spr(23, 112, 120)
+  spr(23, 120, 120)
 end
 --------------------------------------------------------------------------------
 -- end runner
@@ -489,6 +618,7 @@ function change_state(game)
     music(0)
     player.x = 16
     player.y = 68
+    camera(player.x, player.y)
     player.speed = 1
     state = game_states.gym
 
@@ -516,6 +646,12 @@ function change_state(game)
     boss_move = "a wild vacuum appears!"
     boss_state = boss_states.boss_turn -- reset boss state
     state = game_states.boss
+  elseif game == 7 then
+    state = game_states.run_intro
+  elseif game == 8 then
+    state = game_states.run_win
+  elseif game == 9 then
+    state = game_states.run_fail
   end
 end
 
