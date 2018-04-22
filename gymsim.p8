@@ -22,7 +22,10 @@ game_states = {
   boss = 6,
   run_intro = 7,
   run_win = 8,
-  run_fail = 9
+  run_fail = 9,
+  feather_intro = 10,
+  feather_win = 11,
+  feather_fail = 12
 }
 
 boss_states = {
@@ -70,7 +73,7 @@ player = {
   dx = 0,
   dy = 0,
   speed = 0.5, -- how far the player should travel over 60 seconds
-  hearts = 0,
+  hearts = 3,
   cw = true,
   runningboost = false,
   featherboost = false,
@@ -78,6 +81,7 @@ player = {
 }
 feathers = {}
 weights = {}
+trash = {}
 g = {x=0,y=0.5}
 cam = {x = 0,y = 0}
 solid = false
@@ -85,6 +89,8 @@ screen_size = 128
 score = 0
 show_feather = true
 timer = 0
+minuteTimer = 0
+timerMult = 50
 --------------------------------------------------------------------------------
 -- end global variables
 --------------------------------------------------------------------------------
@@ -102,6 +108,7 @@ end
 
 function _update60()
   solid = solid_tile(player.x, player.y)
+  minuteTimer += 1
   if state == game_states.splash then
     update_splash()
   elseif state == game_states.gym then
@@ -120,6 +127,12 @@ function _update60()
     update_run_win()
   elseif state == game_states.run_fail then
     update_run_fail()
+  elseif state == game_states.feather_intro then
+    update_feather_intro()
+  elseif state == game_states.feather_win then
+    update_feather_win()
+  elseif state == game_states.feather_fail then
+    update_feather_fail()
   end
 end
 
@@ -143,6 +156,12 @@ function _draw()
     draw_run_win()
   elseif state == game_states.run_fail then
     draw_run_fail()
+  elseif state == game_states.feather_intro then
+    draw_feather_intro()
+  elseif state == game_states.feather_win then
+    draw_feather_win()
+  elseif state == game_states.feather_fail then
+    draw_feather_fail()
   end
 end
 --------------------------------------------------------------------------------
@@ -216,11 +235,11 @@ function gym_input()
 
   local h = mget((player.x + xoffset)/8, (player.y+7)/8)
 
-  if fget(h, 7) then
+  if fget(h, 7) then -- running game
     change_state(7)
   end
-  if fget(h, 6) then
-    change_state(2)
+  if fget(h, 6) then -- feather game
+    change_state(10)
   end
   if fget(h, 5) then
     change_state(4)
@@ -256,6 +275,13 @@ function feather_input()
   timer += 1
   local lx=player.x
   local ly=player.y
+  if (flr(minuteTimer/60) <= 10) then
+    timerMult = 50
+  elseif (flr(minuteTimer/60) > 10) and (flr(minuteTimer/60) <= 20) then
+    timerMult = 45
+  elseif (flr(minuteTimer/60) > 20) and (flr(minuteTimer/60) <= 30) then
+    timerMult = 40
+  end
 
   --player movement
   if btn(0) then
@@ -269,12 +295,12 @@ function feather_input()
   --world collision
   if(world_collision(player)) player.x=lx player.y=ly
 
-  if timer == 50 then
+  if timer == timerMult then
     random_obj()
     if(show_feather == false) then
-      create_obs(weights,25)
+      create_obs(weights,25, true)
     else
-      create_obs(feathers,24)
+      create_obs(feathers,24, true)
     end
     timer = 0
   end
@@ -288,6 +314,13 @@ end
 
 function update_feather()
     feather_input()
+    if (player.hearts == 0) then
+      change_state(12) -- change state to fail splash scene
+    end
+    if(score == 20) then
+      change_state(11) -- change state to win splash screen
+      featherboost = true
+    end
 end
 
 function draw_feather()
@@ -295,12 +328,129 @@ function draw_feather()
   camera(0, 0)
   spr(1,player.x,player.y) --draw player
 
-  print ( 'time:'..flr(time()), 95, 2, 7)
-  print ( 'score:'..score, 95, 10, 7)
+  --print ( 'time:'..flr(time()), 95, 2, 7)
+  --print ( 'score:'..score, 95, 10, 7)
 
   -- spawn objects
   foreach(feathers, draw_obs)
   foreach(weights, draw_obs)
+  draw_hearts()
+end
+
+function update_feather_intro()
+  if btnp(5) then
+      change_state(2) -- change state to feather scene
+  end
+end
+
+function draw_feather_intro()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,12)
+  local text = " feather sim!"
+  write(text, text_x_pos(text), 30,7)
+  local text = " avoid obsticles by using"
+  write(text, text_x_pos(text), 50,7)
+  local text = " the left and right keys!"
+  write(text, text_x_pos(text), 60,7)
+  local text = " collect 20 feathers to"
+  write(text, text_x_pos(text), 80,7)
+  local text = " complete your training"
+  write(text, text_x_pos(text), 90,7)
+  local text = " and become more agile!"
+  write(text, text_x_pos(text), 100,7)
+  spr(20, 0, 120)
+  spr(20, 8, 120)
+  spr(20, 16, 120)
+  spr(20, 24, 120)
+  spr(20, 32, 120)
+  spr(20, 40, 120)
+  spr(20, 48, 120)
+  spr(20, 56, 120)
+  spr(20, 64, 120)
+  spr(20, 72, 120)
+  spr(20, 80, 120)
+  spr(20, 88, 120)
+  spr(20, 96, 120)
+  spr(20, 104, 120)
+  spr(20, 112, 120)
+  spr(20, 120, 120)
+end
+
+function update_feather_win()
+  if btnp(5) then
+      change_state(1) -- change state to gym scene
+  end
+end
+
+function draw_feather_win()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,14)
+  local text = " you won!"
+  write(text, text_x_pos(text), 30,7)
+  local text = " you'll be able to"
+  write(text, text_x_pos(text), 50,7)
+  local text = " use an agility attack"
+  write(text, text_x_pos(text), 60,7)
+  local text = " when fighting the vacuum!"
+  write(text, text_x_pos(text), 70,7)
+  local text = " good job!"
+  write(text, text_x_pos(text), 90,7)
+  spr(22, 0, 120)
+  spr(22, 8, 120)
+  spr(22, 16, 120)
+  spr(22, 24, 120)
+  spr(22, 32, 120)
+  spr(22, 40, 120)
+  spr(22, 48, 120)
+  spr(22, 56, 120)
+  spr(22, 64, 120)
+  spr(22, 72, 120)
+  spr(22, 80, 120)
+  spr(22, 88, 120)
+  spr(22, 96, 120)
+  spr(22, 104, 120)
+  spr(22, 112, 120)
+  spr(22, 120, 120)
+end
+
+function update_feather_fail()
+  if btnp(5) then
+      change_state(1) -- change state to gym scene
+  end
+end
+
+function draw_feather_fail()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,9)
+  local text = " you failed!"
+  write(text, text_x_pos(text), 30,7)
+  local text = " you'll have to hit"
+  write(text, text_x_pos(text), 50,7)
+  local text = " the gym more if you"
+  write(text, text_x_pos(text), 60,7)
+  local text = " want to beat the vacuum!"
+  write(text, text_x_pos(text), 70,7)
+  local text = " try again!"
+  write(text, text_x_pos(text), 90,7)
+  spr(23, 0, 120)
+  spr(23, 8, 120)
+  spr(23, 16, 120)
+  spr(23, 24, 120)
+  spr(23, 32, 120)
+  spr(23, 40, 120)
+  spr(23, 48, 120)
+  spr(23, 56, 120)
+  spr(23, 64, 120)
+  spr(23, 72, 120)
+  spr(23, 80, 120)
+  spr(23, 88, 120)
+  spr(23, 96, 120)
+  spr(23, 104, 120)
+  spr(23, 112, 120)
+  spr(23, 120, 120)
 end
 --------------------------------------------------------------------------------
 -- end feather
@@ -312,6 +462,15 @@ end
 -- begin runner
 --------------------------------------------------------------------------------
 function runner_input()
+  if (flr(minuteTimer/60) <= 10) then
+    timerMult = 25
+  elseif (flr(minuteTimer/60) > 10) and (flr(minuteTimer/60) <= 20) then
+    timerMult = 15
+  elseif (flr(minuteTimer/60) > 20) and (flr(minuteTimer/60) <= 30) then
+    timerMult = 13
+  end
+  timer += 1
+
   -- up
   if btnp(2) then
     player.y -= 24
@@ -322,6 +481,21 @@ function runner_input()
     player.y += 24
     if (player.y>=98) player.y=96
   end
+
+  if timer == timerMult then
+    random_obj()
+    if(show_feather == false) then
+      create_obs(trash,37, false)
+    else
+      create_obs(trash,38, false)
+    end
+    timer = 0
+  end
+
+
+  trash_collision(trash)
+
+  foreach(trash, update_trash)
 end
 
 function update_runner()
@@ -329,16 +503,26 @@ function update_runner()
     if (player.hearts == 0) then
       change_state(9) -- change state to fail splash scene
     end
+    if (flr(minuteTimer/60) == 30) then
+      change_state(8) -- change state to win splash screen
+      runningboost = true
+    end
 end
 
 function draw_runner()
   cls()
+
   -- draw map
   map(38, 0, -((time()*16 % 8)), 0, 128, 32)
   camera(0, 0)
   -- draw player sprite
-  spr(1, player.x, player.y)
+
+
+  -- spawn objects
+  foreach(trash, draw_obs)
   draw_hearts()
+  spr(1, player.x, player.y)
+  --debug()
 end
 
 function update_run_intro()
@@ -357,7 +541,7 @@ function draw_run_intro()
   write(text, text_x_pos(text), 50,7)
   local text = " the up and down keys!"
   write(text, text_x_pos(text), 60,7)
-  local text = " complete your training to"
+  local text = " survive for 30 seconds to"
   write(text, text_x_pos(text), 75,7)
   local text = " become more speedy!"
   write(text, text_x_pos(text), 85,7)
@@ -602,13 +786,14 @@ end
 
 function debug()
   --print(solid, player.x+3, player.y-11, 9)
-  write("game state is " .. tostr(state), 0,0,4)
+  --write("game state is " .. tostr(state), 0,0,4)
   -- for button=0,#isbuttonpressed - 1 do
   --   write("btn " .. tostr(button) .. " " .. tostr(wasbuttonreleased[button + 1]), 0,20 + button * 10, 4)
   -- end
   --if state == game_states.boss then
   -- write("boss state is " .. tostr(boss_state), 0,10,4)
   --end
+  print (timer, player.x + 3, player.y - 11, 9)
 end
 
 -- state changes
@@ -618,8 +803,11 @@ function change_state(game)
     music(0)
     player.x = 16
     player.y = 68
-    camera(player.x, player.y)
+    player.hearts = 3
+    cam.x = 0
+    cam.y = 0
     player.speed = 1
+    timer = 0
     state = game_states.gym
 
   elseif game == 2 then
@@ -629,11 +817,14 @@ function change_state(game)
     w = 128
     h = 128
     state = game_states.feather
+    minuteTimer = 0
+    score = 0
 
   elseif game == 3 then
     player.x = 16
     player.y = 48
     state = game_states.runner
+    minuteTimer = 0
 
   elseif game == 4 then
     state = game_states.masher
@@ -652,6 +843,12 @@ function change_state(game)
     state = game_states.run_win
   elseif game == 9 then
     state = game_states.run_fail
+  elseif game == 10 then
+    state = game_states.feather_intro
+  elseif game == 11 then
+    state = game_states.feather_win
+  elseif game == 12 then
+    state = game_states.feather_fail
   end
 end
 
@@ -673,15 +870,6 @@ function get_prev_option_index(cur)
     end
   end
   return cur -- no more options
-end
-
-function issolid(x, y)
-  val=mget(x, y)
-
- -- check if flag 1 is set (the
- -- orange toggle button in the
- -- sprite editor)
- return fget(val, 1)
 end
 
 -- calculate center position in x axis
@@ -775,6 +963,12 @@ function draw_hearts()
     spr(23, 101, 1)
     spr(23, 92, 1)
   end
+  if(state == game_states.runner) then
+    print ('timer:'..flr(minuteTimer/60), 90, 10, 0)
+  end
+  if(state == game_states.feather) then
+    print ('score:'..score, 90, 10, 0)
+  end
 end
 
 -- check for solid tiles
@@ -802,11 +996,16 @@ function random_obj()
     end
 end
 
-function create_obs(obj, sprite)
+function create_obs(obj, sprite, top)
   -- empty table to fill with below values
   local o = {}
-  o.x = flr(rnd(110)) + 10
-  o.y = 0
+  if (top == true) then
+    o.x = flr(rnd(110)) + 10
+    o.y = 0
+  else
+    o.x = 128
+    o.y = (flr(rnd(4)) + 1) * 24
+  end
   o.sprite = sprite
 
   add(obj, o)
@@ -817,8 +1016,13 @@ function update_feathers(o)
   o.y += 2
 end
 
+
 function update_weights(o)
   o.y += 4
+end
+
+function update_trash(o)
+  o.x -= 1
 end
 
 function draw_obs(o)
@@ -832,12 +1036,29 @@ function collision_obs(obj)
         del(obj, f)
         if (obj == feathers) then
           score += 1
+          sfx(7)
+        elseif (obj == weights) then
+          player.hearts -= 1
+          sfx(6)
         end
       end
 
       if (f.y>128) del(obj, f)
   end
 end
+
+function trash_collision(obj)
+  for f in all(obj) do
+    if(f.x == player.x) and (f.y == player.y) then
+      del(obj, f)
+      sfx(6)
+      player.hearts -= 1
+    end
+    if (f.x<=0) del(obj, f)
+  end
+end
+
+
 
 function world_collision(a)
   local cb = false
@@ -906,7 +1127,7 @@ __gfx__
 00000000000666666dddd00000222aaaaa2200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000666666666600002222222222220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-0001020202020202020202020000000000000000000000000000202040408080000000000000000000002020404080800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0001020202020202020202020000000000000000000000000000202040408080000000000002020000002020404080800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 0d0e0e0d0e0e0e0e0e0e0d0e0e0d0e0e0e0e0e0e0d0e0e0d0e0e0e0e0e0e0e0d0e0e0d0e0e0e131313131313131313131313131313131300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -945,8 +1166,8 @@ __sfx__
 010e00000c1700c170000001114000000101400c140000001314010140000000c1400e140000000e140000000e1501015000000101501115000000111501315000000101500e150000000e1500c1500c15000000
 010e00000c1500c15000000101500000011150000001115013150000001115010150000000c1500e150000000e1500e1500000010150101500000011150111501315000000151500000017150000001815018150
 010e00000c1500c15000000101500000011150000001115013150000001115010150000000c1500e150000000c1500e150000000c1500e150000000c1500e15010150000000e150000000c1500c1500000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0104000017453124730e4730b47308473000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+01070000285702b570305700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010800001075000000107500000013750000001075000000107500000010750000001375000000107500000010750000001075000000157500000010750000001075000000107500000013750000001075000000
 010800000c635000040000000000000000000000000000000c6350000000000000000000000000000000000011635000000000000000000000000000000000001063500000106350000015635000001063500000
 0108000010140000000e1400000010140000000e14000000131400000013140000001014000000000000000010140000001014000000111400000010140000000000000000000000000000000000000000000000
