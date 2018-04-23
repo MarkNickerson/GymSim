@@ -25,7 +25,10 @@ game_states = {
   run_fail = 9,
   feather_intro = 10,
   feather_win = 11,
-  feather_fail = 12
+  feather_fail = 12,
+  masher_intro = 13,
+  masher_win = 14, 
+  masher_fail = 15
 }
 
 boss_states = {
@@ -119,6 +122,8 @@ function _update60()
     update_feather()
   elseif state == game_states.runner then
     update_runner()
+  elseif state == game_states.masher then
+    update_masher()
   elseif state == game_states.gameover then
     update_gameover()
   elseif state == game_states.boss then
@@ -135,6 +140,12 @@ function _update60()
     update_feather_win()
   elseif state == game_states.feather_fail then
     update_feather_fail()
+  elseif state == game_states.masher_intro then
+    update_masher_intro()
+  elseif state == game_states.masher_win then
+    update_masher_win()
+  elseif state == game_states.masher_fail then
+    update_masher_fail()
   end
 end
 
@@ -148,6 +159,8 @@ function _draw()
     draw_feather()
   elseif state == game_states.runner then
     draw_runner()
+  elseif state == game_states.masher then
+    draw_masher()
   elseif state == game_states.gameover then
     draw_gameover()
   elseif state == game_states.boss then
@@ -164,6 +177,12 @@ function _draw()
     draw_feather_win()
   elseif state == game_states.feather_fail then
     draw_feather_fail()
+  elseif state == game_states.masher_intro then
+    draw_masher_intro()
+  elseif state == game_states.masher_win then
+    draw_masher_win()
+  elseif state == game_states.masher_fail then
+    draw_masher_fail()
   end
 end
 --------------------------------------------------------------------------------
@@ -244,7 +263,7 @@ function gym_input()
     change_state(10)
   end
   if fget(h, 5) then -- mashing game
-    change_state(4)
+    change_state(13)
   end
   if fget(h, 4) then -- mashing game
     change_state(6)
@@ -492,9 +511,11 @@ function runner_input()
   if timer == timermult then
     random_obj()
     if(show_feather == false) then
-      create_obs(trash,37, false)
+      --create_obs(trash,37, false)
+      create_obs(trash, 25, false)
     else
-      create_obs(trash,38, false)
+      --create_obs(trash,38, false)
+      create_obs(trash, 25, false)
     end
     timer = 0
   end
@@ -651,7 +672,141 @@ end
 -- end runner
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- begin masher
+--------------------------------------------------------------------------------
 
+function masher_input()
+
+end
+
+function update_masher()
+  masher_input()
+  if btnp(5) then
+      change_state(14) -- change state to masher scene
+  end
+end
+
+function draw_masher()
+  cls()
+end
+
+function update_masher_intro()
+  if btnp(5) then
+      change_state(4) -- change state to masher scene
+  end
+end
+
+function draw_masher_intro()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,12)
+  local text = "button mashing sim!"
+  write(text, text_x_pos(text), 30,7)
+  local text = "hone your scratching skills"
+  write(text, text_x_pos(text), 50,7)
+  local text = " use the left and right arrows"
+  write(text, text_x_pos(text), 60,7)
+  local text = " to defeat the evil"
+  write(text, text_x_pos(text), 75,7)
+  local text = " scratching post!"
+  write(text, text_x_pos(text), 85,7)
+  spr(20, 0, 120)
+  spr(20, 8, 120)
+  spr(20, 16, 120)
+  spr(20, 24, 120)
+  spr(20, 32, 120)
+  spr(20, 40, 120)
+  spr(20, 48, 120)
+  spr(20, 56, 120)
+  spr(20, 64, 120)
+  spr(20, 72, 120)
+  spr(20, 80, 120)
+  spr(20, 88, 120)
+  spr(20, 96, 120)
+  spr(20, 104, 120)
+  spr(20, 112, 120)
+  spr(20, 120, 120)
+end
+
+function update_masher_win()
+  if btnp(5) then
+      change_state(1) -- change state to gym scene
+  end
+end
+
+function draw_masher_win()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,14)
+  local text = " you won!"
+  write(text, text_x_pos(text), 30,7)
+  local text = " you'll be able to"
+  write(text, text_x_pos(text), 50,7)
+  local text = " use a slash attack"
+  write(text, text_x_pos(text), 60,7)
+  local text = " when fighting the vacuum!"
+  write(text, text_x_pos(text), 70,7)
+  local text = " good job!"
+  write(text, text_x_pos(text), 90,7)
+  spr(22, 0, 120)
+  spr(22, 8, 120)
+  spr(22, 16, 120)
+  spr(22, 24, 120)
+  spr(22, 32, 120)
+  spr(22, 40, 120)
+  spr(22, 48, 120)
+  spr(22, 56, 120)
+  spr(22, 64, 120)
+  spr(22, 72, 120)
+  spr(22, 80, 120)
+  spr(22, 88, 120)
+  spr(22, 96, 120)
+  spr(22, 104, 120)
+  spr(22, 112, 120)
+  spr(22, 120, 120)
+end
+
+function update_masher_fail()
+  if btnp(5) then
+      change_state(1) -- change state to gym scene
+  end
+end
+
+function draw_masher_fail()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,9)
+  local text = " you failed!"
+  write(text, text_x_pos(text), 30,7)
+  local text = " you'll have to hit"
+  write(text, text_x_pos(text), 50,7)
+  local text = " the gym more if you"
+  write(text, text_x_pos(text), 60,7)
+  local text = " want to beat the vacuum!"
+  write(text, text_x_pos(text), 70,7)
+  local text = " try again!"
+  write(text, text_x_pos(text), 90,7)
+  spr(23, 0, 120)
+  spr(23, 8, 120)
+  spr(23, 16, 120)
+  spr(23, 24, 120)
+  spr(23, 32, 120)
+  spr(23, 40, 120)
+  spr(23, 48, 120)
+  spr(23, 56, 120)
+  spr(23, 64, 120)
+  spr(23, 72, 120)
+  spr(23, 80, 120)
+  spr(23, 88, 120)
+  spr(23, 96, 120)
+  spr(23, 104, 120)
+  spr(23, 112, 120)
+  spr(23, 120, 120)
+end
+--------------------------------------------------------------------------------
+-- end masher
+--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- begin game over
@@ -904,6 +1059,12 @@ function change_state(game)
     state = game_states.feather_win
   elseif game == 12 then
     state = game_states.feather_fail
+  elseif game == 13 then
+    state = game_states.masher_intro
+  elseif game == 14 then
+    state = game_states.masher_win
+  elseif game == 15 then
+    state = game_states.masher_fail
   end
 end
 
