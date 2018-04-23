@@ -15,7 +15,7 @@ __lua__
 game_states = {
   splash = 0,
   gym = 1,
-  feather = 2,
+  feather = 2, 
   runner = 3,
   masher = 4,
   gameover = 5,
@@ -25,7 +25,8 @@ game_states = {
   run_fail = 9,
   feather_intro = 10,
   feather_win = 11,
-  feather_fail = 12
+  feather_fail = 12,
+  win = 20,
 }
 
 boss_states = {
@@ -50,7 +51,7 @@ boss_state = boss_states.boss_turn
 -- what to print on the next boss move
 boss_move = "the boss does something"
 -- which workouts have been completed
-completed_tasks = {false, false, false, true} -- run, feather, post 
+completed_tasks = {true, true, true, true} -- run, feather, post 
 -- which boss options have been chosen
 chosen_boss_options = {false, false, false, false}
 -- text to show for each boss option
@@ -135,6 +136,8 @@ function _update60()
     update_feather_win()
   elseif state == game_states.feather_fail then
     update_feather_fail()
+  elseif state == game_states.win then
+    update_win()
   end
 end
 
@@ -164,6 +167,8 @@ function _draw()
     draw_feather_win()
   elseif state == game_states.feather_fail then
     draw_feather_fail()
+  elseif state == game_states.win then
+    draw_win()
   end
 end
 --------------------------------------------------------------------------------
@@ -219,7 +224,7 @@ function gym_input()
    --up
    if btn(2) and not solid_tile(player.x, player.y-1)then
      player.dy = -2
-     	player.y-=player.speed
+      player.y-=player.speed
     if (player.y-cam.y<64-allowance-playerdiff) then cam.y-=player.speed end
   end
 
@@ -463,7 +468,6 @@ end
 --------------------------------------------------------------------------------
 
 
-
 --------------------------------------------------------------------------------
 -- begin runner
 --------------------------------------------------------------------------------
@@ -676,7 +680,7 @@ function update_boss()
     boss_move = "you defeated the vacuum"
     -- go to end screen if victory
     if btnp(5) then
-      change_state(1)
+      change_state(20)
     end
   end
 
@@ -785,6 +789,26 @@ end
 -- end boss
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- begin win
+--------------------------------------------------------------------------------
+
+function draw_win()
+  write_with_bounds("you beat the vacuum! you worked out! nothing can stop you now!", 20, 20, 4, screen_size - 20)
+end
+
+
+function update_win()
+  if (btnp(5)) then
+    -- reset game
+    run()
+  end
+end
+
+--------------------------------------------------------------------------------
+-- end win
+--------------------------------------------------------------------------------
+
 
 
 --------------------------------------------------------------------------------
@@ -868,6 +892,9 @@ function change_state(game)
     state = game_states.feather_win
   elseif game == 12 then
     state = game_states.feather_fail
+  elseif game == 20 then
+    music(33)
+    state = game_states.win
   end
 end
 
@@ -1104,6 +1131,7 @@ end
 -- end utility functions
 --------------------------------------------------------------------------------
 
+
 __gfx__
 000000000003300033444411334554113345541111111111111111113333333333333333333333331145543311455433111111113333333b3333333355555555
 00000000000ff0003355556133455411334554111111111111111111333333333333333333333333114554331145543311111111333333b333333333dddddddd
@@ -1291,6 +1319,11 @@ __sfx__
 01100000000001570000000000001062300000177000000010625000001062500000187000000010625000001a70000000106251061511625116151362513615106251c700000000000015625000001562500000
 011000001042510425104251c0000e425180001142511425114251c00010425180001342513425134251c00011425104250e425230000c4250000010425000000c425000000b425000000c425000000000000000
 011000000c4250c4250c4251c00011425180001042510425104251c00013425180001142511425114251c0001542513425114250000010425000000e425000000c42500000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0110000024510000002b51000000285100000024510000002b51000000000002b51000000000002451024510000000000024510000002b5100000024510000002b51000000000002b51000000000002b5102b510
+0110000024510000002b51000000285100000024510000002b51000000000002b51000000000002451024510000000000024510000002b5100000028510000003051000000000002d51000000000003051030510
+011000000c5100c000135100c000105100c0000c5100c000135100c0000c000135100c0000c0000c5100c5100c0000c0000e5100c0000c5100c000105100c000105100c0000c0000e5100c0000c0001051010510
+011000000c5100c000135100c000105100c0000c5100c000135100c0000c000135100c0000c0000c5100c5100c0000c0000c5100c000135100c000105100c000185100c0000c000155100c0000c0001851018510
 __music__
 01 00014244
 00 00010244
@@ -1324,4 +1357,9 @@ __music__
 00 26272844
 00 26272944
 02 26272844
+00 41424344
+00 2b6c4344
+00 2c424344
+00 2b2d6e44
+00 2c2e4344
 
