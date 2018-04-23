@@ -103,6 +103,7 @@ timermult = 50
 --------------------------------------------------------------------------------
 function _init()
   cls()
+  menuitem (4, "hit the gym", function() change_state(1) end)
   music(0)
   -- start game time
   prev_t = time() -- we use past time per frame so we have framerate independent movement
