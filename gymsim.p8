@@ -760,7 +760,7 @@ function draw_boss()
   end
 
   if boss_state == boss_states.boss_turn or boss_state == boss_states.victory then
-    write_with_bounds(boss_move, 10,80, 3)
+    write_with_bounds(boss_move, 10,80, 3, screen_size - 10)
   end
 end
 
@@ -774,9 +774,9 @@ function draw_boss_menu()
     if completed_tasks[i] and not chosen_boss_options[i] then
       -- task has been completed and option not chosen yet so draw it
       if selected_option == i then
-        write_with_bounds(selected_symbol .. boss_fight_options[i], menu_offset.x,menu_offset.y + text_spacing * i,5)
+        write_with_bounds(selected_symbol .. boss_fight_options[i], menu_offset.x,menu_offset.y + text_spacing * i,5, screen_size - 10)
       else
-        write_with_bounds(" " .. boss_fight_options[i], menu_offset.x,menu_offset.y + text_spacing * i,5)
+        write_with_bounds(" " .. boss_fight_options[i], menu_offset.x,menu_offset.y + text_spacing * i,5, screen_size - 10)
       end
     end
   end
@@ -842,13 +842,18 @@ function change_state(game)
     state = game_states.gameover
 
   elseif game == 6 then
-    music(8)
+    if can_boss_be_defeated() then
+      music(28)
+      boss_move = "you think of all the gains you have from working out. it fills you with resolve!"
+    else
+      music(8)
+      boss_move = "a wild vacuum appears! it looks at you menacingly. you doubt you can beat it in your current state."
+    end
     camera(0, 0)
     for i=1,#chosen_boss_options do
       chosen_boss_options[i] = false
     end
     selected_option = 1
-    boss_move = "a wild vacuum appears!"
     boss_state = boss_states.boss_turn -- reset boss state
     state = game_states.boss
   elseif game == 7 then
@@ -997,6 +1002,14 @@ function solid_tile(x, y)
   end
 end
 
+function can_boss_be_defeated()
+  local can_be_defeated = true
+  for i=1,4 do
+    can_be_defeated = can_be_defeated and completed_tasks[i]
+  end
+  return can_be_defeated
+
+end
 -----------------------------------
 -- begin feather utility functions
 -----------------------------------
@@ -1211,6 +1224,11 @@ __sfx__
 000600000000009310033100131007000050000300001000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000300002575028750010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000400002875035720287500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011000001573011600157301500015730170001773000000177300000017730000001873000000187300000018730000001a730000001a730000001a730000001c730000001c730000001c730000000000000000
+01100000000001570000000000001062300000177000000010625000001062500000187000000010625000001a70000000106251061511625116151362513615106251c700000000000015625000001562500000
+011000001042510425104251c0000e425180001142511425114251c00010425180001342513425134251c00011425104250e425230000c4250000010425000000c425000000b425000000c425000000000000000
+011000000c4250c4250c4251c00011425180001042510425104251c00013425180001142511425114251c0001542513425114250000010425000000e425000000c42500000000000000000000000000000000000
 __music__
 01 00014244
 00 00010244
@@ -1237,4 +1255,11 @@ __music__
 01 191e1d44
 00 191d1e1a
 02 191b4f1e
+00 41424344
+00 41424344
+00 41424344
+01 26276844
+00 26272844
+00 26272944
+02 26272844
 
