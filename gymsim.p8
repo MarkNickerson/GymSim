@@ -676,6 +676,12 @@ end
 -- begin masher
 --------------------------------------------------------------------------------
 
+post = {
+  x = 30,
+  y = 84,
+  health = 100
+}
+
 function draw_scratching_post(x, y)
   spr(141, x, y)
   spr(142, x+8, y)
@@ -693,19 +699,32 @@ function draw_scratching_post(x, y)
 end
 
 function masher_input()
-
+  if btnp(0) then --left
+    post.health -= 5
+  end
+  if btnp(1) then --right
+    post.health -= 5
+  end
 end
 
 function update_masher()
   masher_input()
-  if btnp(5) then
-      change_state(14) -- change state to masher scene
+  --if btnp(5) then
+  if post.health <= 0 then
+      change_state(14) -- change state to masher win scene
+      completed_tasks[2] = true
+      punchingboost = true
   end
+  if (flr(minutetimer/60) == 30) then
+      change_state(15) -- change state to masher fail scene
+    end
 end
 
 function draw_masher()
   cls()
-  draw_scratching_post(30, 84)
+  print ('timer:'..flr(minutetimer/60), 90, 10, 4)
+  print ('health:'..post.health, post.x-8, post.y-8, 4)
+  draw_scratching_post(post.x, post.y)
   draw_player_large(player.x, player.y)
 
 end
@@ -722,7 +741,7 @@ function draw_masher_intro()
   rectfill(0,0,screen_size,screen_size,12)
   local text = "button mashing sim!"
   write(text, text_x_pos(text), 30,7)
-  local text = "hone your scratching skills"
+  local text = "hone your punching skills"
   write(text, text_x_pos(text), 50,7)
   local text = " use the left and right arrows"
   write(text, text_x_pos(text), 60,7)
@@ -762,7 +781,7 @@ function draw_masher_win()
   write(text, text_x_pos(text), 30,7)
   local text = " you'll be able to"
   write(text, text_x_pos(text), 50,7)
-  local text = " use a slash attack"
+  local text = " use a punch attack"
   write(text, text_x_pos(text), 60,7)
   local text = " when fighting the vacuum!"
   write(text, text_x_pos(text), 70,7)
@@ -1049,6 +1068,7 @@ function change_state(game)
     player.x = 68
     player.y = 92
     state = game_states.masher
+    minutetimer = 0
 
   elseif game == 5 then
     state = game_states.gameover
