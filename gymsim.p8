@@ -82,7 +82,8 @@ player = {
   cw = true,
   runningboost = false,
   featherboost = false,
-  punchingboost = false
+  punchingboost = false,
+  moving_right = true
 }
 
 feathers = {}
@@ -238,6 +239,7 @@ function gym_input()
 
     --left
     if btn(0) and not solid_tile(player.x-1, player.y) then
+      player.moving_right = false
       player.dx = -2
     player.x-=player.speed
     if (player.x-cam.x<64-allowance-playerdiff) then cam.x-=player.speed end
@@ -245,6 +247,7 @@ function gym_input()
 
    --right
    if btn(1) and not solid_tile(player.x + 8 + 1, player.y)then
+      player.moving_right = true
      player.dx = 2
     player.x+=player.speed
     if (player.x-cam.x>64+allowance) then cam.x+=player.speed end
@@ -304,7 +307,7 @@ function draw_gym()
   camera(cam.x, cam.y)
   -- draw player sprite
   -- spr(1, player.x, player.y)
-  draw_player_small(player.x, player.y)
+  draw_player_small(player.x, player.y, player.moving_right)
   draw_boosts()
 end
 --------------------------------------------------------------------------------
@@ -331,10 +334,12 @@ function feather_input()
   --player movement
   if btn(0) then
     player.x += -1 * player.speed
+    player.moving_right = false
   end
 
   if btn(1) then
     player.x += player.speed
+    player.moving_right = true
   end
 
   --world collision
@@ -700,19 +705,9 @@ post = {
 }
 
 function draw_scratching_post(x, y)
-  spr(141, x, y)
-  spr(142, x+8, y)
-  spr(157, x, y+8)
-  spr(158, x+8, y+8)
-  spr(159, x+16, y+8)
-  spr(173, x, y+16)
-  spr(174, x+8, y+16)
-  spr(175, x+16, y+16)
+  spr(140, x-8, y, 3, 3)
   spr(194, x+4, y+24)
-  spr(188, x-8, y+32)
-  spr(189, x, y+32)
-  spr(190, x+8, y+32)
-  spr(191, x+16, y+32)
+  spr(188, x-8, y+32, 4, 1)
 end
 
 function masher_input()
@@ -958,7 +953,7 @@ end
 function draw_boss()
   -- draw player sprite
   -- spr(21, 20, 60)
-  draw_player_large(20, 36)
+  draw_player_large(20, 36, true)
 
   -- draw boss
   spr(67, 100, 20)
@@ -1070,53 +1065,24 @@ end
 -- begin player
 --------------------------------------------------------------------------------
 
-function draw_player_large(x, y)
+function draw_player_large(x, y, flipped)
   -- draw player sprite 32 x 32
-  spr(130, x+16, y)
-  spr(131, x+24, y)
-  spr(144, x, y+8)
-  spr(145, x+8, y+8)
-  spr(146, x+16, y+8)
-  spr(147, x+24, y+8)
-  spr(160, x, y+16)
-  spr(161, x+8, y+16)
-  spr(162, x+16, y+16)
-  spr(163, x+24, y+16)
-  spr(176, x, y+24)
-  spr(177, x+8, y+24)
-  spr(178, x+16, y+24)
-  spr(179, x+24, y+24)
+  -- flipped == false (faces left)
+  -- flipped == true (faces right)
+  spr(128, x, y, 4, 4, flipped)
 end
 
-function draw_player_small(x, y)
+
+function draw_player_small(x, y, flipped)
   -- draw player sprite 16 x 16
-  spr(224, x, y)
-  spr(225, x+8, y)
-  spr(240, x, y+8)
-  spr(241, x+8, y+8)
+  -- flipped == false (faces left)
+  -- flipped == true (faces right)
+  spr(224, x, y, 2, 2, flipped)
 end
 
 function draw_player_attack(x, y)
   -- draw cat scratch attack sprite
-  spr(195, x, y)
-  spr(196, x+8, y)
-  spr(197, x+16, y)
-  spr(198, x+24, y)
-
-  spr(211, x, y+8)
-  spr(212, x+8, y+8)
-  spr(213, x+16, y+8)
-  spr(214, x+24, y+8)
-
-  spr(227, x, y+16)
-  spr(228, x+8, y+16)
-  spr(229, x+16, y+16)
-  spr(230, x+24, y+16)
-
-  spr(243, x, y+24)
-  spr(244, x+8, y+24)
-  spr(245, x+16, y+24)
-  spr(246, x+24, y+24)
+  spr(195, x, y, 4, 4)
 end
 
 --------------------------------------------------------------------------------
