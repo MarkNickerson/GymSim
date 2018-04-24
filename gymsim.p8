@@ -15,7 +15,7 @@ __lua__
 game_states = {
   splash = 0,
   gym = 1,
-  feather = 2, 
+  feather = 2,
   runner = 3,
   masher = 4,
   gameover = 5,
@@ -27,7 +27,7 @@ game_states = {
   feather_win = 11,
   feather_fail = 12,
   masher_intro = 13,
-  masher_win = 14, 
+  masher_win = 14,
   masher_fail = 15,
   win = 20,
   fight_boss = 21
@@ -564,7 +564,7 @@ function draw_runner()
   foreach(trash, draw_obs)
   draw_hearts()
   -- spr(1, player.x, player.y)
-  draw_player_small(player.x, player.y)
+  draw_player_small(player.x, player.y-8)
   --debug()
 end
 
@@ -1722,4 +1722,3 @@ __music__
 00 38393a32
 00 323b3578
 02 323b3578
-
