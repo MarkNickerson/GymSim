@@ -573,7 +573,7 @@ function draw_runner()
   foreach(trash, draw_obs)
   draw_hearts()
   -- spr(1, player.x, player.y)
-  draw_player_small(player.x, player.y-8)
+  draw_player_small(player.x, player.y-8, true)
   --debug()
 end
 
