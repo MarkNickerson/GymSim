@@ -27,6 +27,7 @@ game_states = {
   feather_win = 11,
   feather_fail = 12,
   win = 20,
+  fight_boss = 21
 }
 
 boss_states = {
@@ -93,6 +94,7 @@ show_feather = true
 timer = 0
 minutetimer = 0
 timermult = 50
+fight_boss_prompt = false
 --------------------------------------------------------------------------------
 -- end global variables
 --------------------------------------------------------------------------------
@@ -139,6 +141,8 @@ function _update60()
     update_feather_fail()
   elseif state == game_states.win then
     update_win()
+  elseif state == game_states.fight_boss then
+    update_fight_boss()
   end
 end
 
@@ -170,6 +174,8 @@ function _draw()
     draw_feather_fail()
   elseif state == game_states.win then
     draw_win()
+  elseif state == game_states.fight_boss then
+    draw_fight_boss()
   end
 end
 --------------------------------------------------------------------------------
@@ -264,6 +270,10 @@ end
 
 function update_gym()
     gym_input()
+    if player.runningboost and player.featherboost and player.punchingboost and not fight_boss_prompt then
+      fight_boss_prompt = true
+      change_state(21)
+    end
 end
 
 function draw_gym()
@@ -811,7 +821,52 @@ end
 -- end win
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- begin fight boss
+--------------------------------------------------------------------------------
 
+function draw_fight_boss()
+  cls()
+  camera(0, 0)
+  rectfill(0,0,screen_size,screen_size,10)
+  local text = " nice work!"
+  write(text, text_x_pos(text), 30,15)
+  local text = " you're ready to face the"
+  write(text, text_x_pos(text), 50,15)
+  local text = " fearsome vacuum!"
+  write(text, text_x_pos(text), 60,15)
+  local text = " leave the gym and"
+  write(text, text_x_pos(text), 70,15)
+  local text = " beat that boss!"
+  write(text, text_x_pos(text), 80,7)
+  spr(22, 0, 120)
+  spr(22, 8, 120)
+  spr(22, 16, 120)
+  spr(22, 24, 120)
+  spr(22, 32, 120)
+  spr(22, 40, 120)
+  spr(22, 48, 120)
+  spr(22, 56, 120)
+  spr(22, 64, 120)
+  spr(22, 72, 120)
+  spr(22, 80, 120)
+  spr(22, 88, 120)
+  spr(22, 96, 120)
+  spr(22, 104, 120)
+  spr(22, 112, 120)
+  spr(22, 120, 120)
+end
+
+
+function update_fight_boss()
+  if (btnp(5)) then
+    change_state(1) -- change state to gym scene
+  end
+end
+
+--------------------------------------------------------------------------------
+-- end fight boss
+--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- begin utility functions
@@ -897,6 +952,8 @@ function change_state(game)
   elseif game == 20 then
     music(33)
     state = game_states.win
+  elseif game == 21 then
+    state = game_states.fight_boss
   end
 end
 
