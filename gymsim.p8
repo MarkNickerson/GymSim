@@ -703,7 +703,7 @@ end
 post = {
   x = 30,
   y = 84,
-  health = 100
+  health = 150
 }
 
 function draw_scratching_post(x, y)
@@ -751,6 +751,7 @@ function draw_masher()
 end
 
 function update_masher_intro()
+  post.health = 150
   if btnp(5) then
       change_state(4) -- change state to masher scene
   end
