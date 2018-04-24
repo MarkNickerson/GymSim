@@ -573,6 +573,7 @@ function draw_runner()
   -- spawn objects
   foreach(trash, draw_obs)
   draw_hearts()
+  print ('timer:'..(30-flr(minutetimer/60)), 90, 10, 0)
   -- spr(1, player.x, player.y)
   draw_player_small(player.x, player.y-8, true)
   --debug()
@@ -737,7 +738,7 @@ end
 
 function draw_masher()
   cls(2)
-  print ('timer:'..flr(minutetimer/60), 90, 10, 7)
+  print ('timer:'..(15-flr(minutetimer/60)), 90, 10, 7)
   print ('health:'..post.health, post.x-8, post.y-8, 7)
   draw_scratching_post(post.x, post.y)
   if(scratch_left) then
@@ -1334,9 +1335,6 @@ function draw_hearts()
     spr(23, 110, 1)
     spr(23, 101, 1)
     spr(23, 92, 1)
-  end
-  if(state == game_states.runner) then
-    print ('timer:'..flr(minutetimer/60), 90, 10, 0)
   end
   if(state == game_states.feather) then
     print ('score:'..score, 90, 10, 0)
