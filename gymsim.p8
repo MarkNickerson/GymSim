@@ -55,7 +55,7 @@ boss_state = boss_states.boss_turn
 -- what to print on the next boss move
 boss_move = "the boss does something"
 -- which workouts have been completed
-completed_tasks = {false, false, true, true} -- run, feather, post
+completed_tasks = {false, false, false, true} -- run, feather, post
 -- which boss options have been chosen
 chosen_boss_options = {false, false, false, false}
 -- text to show for each boss option
@@ -729,10 +729,10 @@ function update_masher()
   --if btnp(5) then
   if post.health <= 0 then
       change_state(14) -- change state to masher win scene
-      completed_tasks[2] = true
-      punchingboost = true
+      completed_tasks[3] = true
+      player.punchingboost = true
   end
-  if (flr(minutetimer/60) == 30) then
+  if (flr(minutetimer/60) == 15) then
       change_state(15) -- change state to masher fail scene
     end
 end
@@ -744,14 +744,6 @@ function draw_masher()
   draw_scratching_post(post.x, post.y)
 
   draw_player_attack(player.x, player.y)
-  --if btnp(0) then -- draw attack cat
-  --  draw_player_attack(player.x, player.y)
-  --elseif btnp(1) then -- draw attack cat
-  --  draw_player_attack(player.x, player.y)
-  --else
-  --  draw_player_large(player.x, player.y)
-  --end
-
 end
 
 function update_masher_intro()
@@ -766,7 +758,7 @@ function draw_masher_intro()
   rectfill(0,0,screen_size,screen_size,12)
   local text = "button mashing sim!"
   write(text, text_x_pos(text), 30,7)
-  local text = "hone your punching skills"
+  local text = "hone your scratching skills"
   write(text, text_x_pos(text), 50,7)
   local text = " use the left and right arrows"
   write(text, text_x_pos(text), 60,7)
@@ -806,7 +798,7 @@ function draw_masher_win()
   write(text, text_x_pos(text), 30,7)
   local text = " you'll be able to"
   write(text, text_x_pos(text), 50,7)
-  local text = " use a punch attack"
+  local text = " use a slash attack"
   write(text, text_x_pos(text), 60,7)
   local text = " when fighting the vacuum!"
   write(text, text_x_pos(text), 70,7)
