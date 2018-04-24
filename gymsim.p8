@@ -1145,6 +1145,7 @@ function change_state(game)
     minutetimer = 0
 
   elseif game == 4 then
+    music(38)
     player.x = 68
     player.y = 92
     state = game_states.masher
